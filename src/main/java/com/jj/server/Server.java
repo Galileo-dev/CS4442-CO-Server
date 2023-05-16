@@ -56,18 +56,32 @@ public class Server {
 
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+                String helpMessage = "Type 'quit' to exit\n" + "Type 'help' for help\n";
+
+                bufferedWriter.write("Welcome to the server!\n" + helpMessage);
+                bufferedWriter.flush();
+
                 boolean isConnected = true;
                 while (isConnected) {
                     String line = bufferedReader.readLine();
-                    if (line.equals("quit")) {
-                        isConnected = false;
-                        socket.close();
-                    } else {
-                        bufferedWriter.write(line + "\n");
-                        bufferedWriter.flush();
+
+                    switch (line) {
+                        case "quit":
+                            bufferedWriter.write("Goodbye :-(\n");
+                            isConnected = false;
+                            socket.close();
+                            break;
+
+                        case "help":
+                            bufferedWriter.write(helpMessage);
+                            bufferedWriter.flush();
+                            break;
+
+                        default:
+                            bufferedWriter.write(line + "\n");
+                            bufferedWriter.flush();
                     }
                 }
-
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
                 System.exit(1);
