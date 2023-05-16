@@ -51,13 +51,38 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
-            <configuration>
-              <archive>
-                <manifest>
-                  <mainClass>com.jj.server.App</mainClass>
-                </manifest>
-              </archive>
-      </configuration>
+          <executions>
+            <execution>
+              <id>client</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <configuration>
+                <archive>
+                  <manifest>
+                    <mainClass>com.jj.server.Client</mainClass>
+                  </manifest>
+                </archive>
+                <classifier>client</classifier>
+              </configuration>
+            </execution>
+            <execution>
+              <id>server</id>
+              <phase>package</phase>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <configuration>
+                <archive>
+                  <manifest>
+                    <mainClass>com.jj.server.Server</mainClass>
+                  </manifest>
+                </archive>
+                <classifier>server</classifier>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
