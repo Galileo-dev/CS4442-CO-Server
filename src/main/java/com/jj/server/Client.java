@@ -28,19 +28,19 @@ public class Client {
             bufferedReader = new BufferedReader(inputStreamReader);
             bufferedWriter = new BufferedWriter(outputStreamWriter);
 
-            Scanner input = new Scanner(System.in);
+            try (Scanner input = new Scanner(System.in)) {
+                while (true) {
+                    String msgToSend = input.nextLine();
 
-            while (true) {
-                String msgToSend = input.nextLine();
+                    bufferedWriter.write(msgToSend);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
 
-                bufferedWriter.write(msgToSend);
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
+                    System.out.println("Server: " + bufferedReader.readLine());
 
-                System.out.println("Server: " + bufferedReader.readLine());
-
-                if (msgToSend.equalsIgnoreCase("BYE"))
-                    break;
+                    if (msgToSend.equalsIgnoreCase("BYE"))
+                        break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
