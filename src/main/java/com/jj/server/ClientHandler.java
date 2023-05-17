@@ -3,9 +3,7 @@ package com.jj.server;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -37,11 +35,6 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
-
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
             String helpMessage = "Type 'quit' to exit\n" + "Type 'help' for help\n";
 
             bufferedWriter.write("Welcome to the server!\n" + helpMessage);
@@ -80,7 +73,8 @@ public class ClientHandler implements Runnable {
                     clientHandler.bufferedWriter.flush();
                 }
             } catch (IOException io) {
-                closeEverything(socket, bufferedReader, bufferedWriter);
+                //closeEverything(socket, bufferedReader, bufferedWriter);
+                System.err.println("Error broadcasting message to client"+ io.getMessage());
             }
         }
     }
@@ -106,5 +100,4 @@ public class ClientHandler implements Runnable {
             io.printStackTrace();
         }
     }
-
 }

@@ -29,6 +29,15 @@ public class Client {
             bufferedWriter.write(username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
+
+            try (Scanner scanner = new Scanner(System.in)) {
+                while(socket.isConnected()){
+                    String messageToSend = scanner.nextLine();
+                    bufferedWriter.write(username+": "+ messageToSend);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                }
+            }
         } catch (IOException io) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }

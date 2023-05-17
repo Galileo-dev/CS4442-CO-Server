@@ -16,10 +16,11 @@ public class Server {
 
     public void startServer() {
         Logger logger = Logger.getLogger(Server.class.getName());
+        ClientHandler clientHandler;
 
         try {
             logger.info("Starting server...");
-            serverSocket = new ServerSocket(port);
+            // serverSocket = new ServerSocket(port);
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
                     + serverSocket.getLocalPort());
@@ -28,7 +29,7 @@ public class Server {
                 Socket socket = serverSocket.accept();
                 logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
                         + socket.getPort());
-                ClientHandler clientHandler = new ClientHandler(socket);
+                clientHandler = new ClientHandler(socket);
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
