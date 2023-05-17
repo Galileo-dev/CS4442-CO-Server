@@ -7,58 +7,88 @@ import java.util.logging.Logger;
 
 // https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Client {
-    public static void main(String[] args) {
+
+    private Socket socket;
+    private String username;
+    private BufferedReader bufferedReader;
+    private BufferedWriter bufferedWriter;
+
+    public Client(Socket socket, String username) {
+        try {
+            this.socket = socket;
+            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.username = username;
+        } catch (IOException io) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+        }
+    }
+
+    public void sendMessage() {
+        try {
+            bufferedWriter.write(username);
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
+        } catch (IOException io) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
+        }
+    }
+
+    public void listenForMessage() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String msgFromChat;
+                while (socket.isConnected()) {
+                    try {
+                        msgFromChat = bufferedReader.readLine();
+                        System.out.println(msgFromChat);
+                    } catch (IOException io) {
+                        closeEverything(socket, bufferedReader, bufferedWriter);
+                    }
+                }
+            }
+        }).start();
+    }
+
+    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+        try {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            if (bufferedWriter != null) {
+                bufferedWriter.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
         Logger logger = Logger.getLogger(Client.class.getName());
 
         int port = 8080;
         String host = "localhost";
-
-        Socket socket = null;
-        InputStreamReader inputStreamReader = null;
-        OutputStreamWriter outputStreamWriter = null;
-        BufferedReader bufferedReader = null;
-        BufferedWriter bufferedWriter = null;
-
+        Socket socket = new Socket(host, port);
+        
         try {
-            socket = new Socket(host, port);
-            logger.info(host);
-            inputStreamReader = new InputStreamReader(socket.getInputStream());
-            outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+            logger.info("Connecting to server...");
+            logger.info(
+                    "Connected to server on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            System.exit(1);
+        }
 
-            bufferedReader = new BufferedReader(inputStreamReader);
-            bufferedWriter = new BufferedWriter(outputStreamWriter);
-
-            try (Scanner input = new Scanner(System.in)) {
-                while (true) {
-                    String msgToSend = input.nextLine();
-
-                    bufferedWriter.write(msgToSend);
-                    bufferedWriter.newLine();
-                    bufferedWriter.flush();
-
-                    System.out.println("Server: " + bufferedReader.readLine());
-
-                    if (msgToSend.equalsIgnoreCase("BYE"))
-                        break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (socket != null)
-                    socket.close();
-                if (inputStreamReader != null)
-                    inputStreamReader.close();
-                if (outputStreamWriter != null)
-                    outputStreamWriter.close();
-                if (bufferedReader != null)
-                    bufferedReader.close();
-                if (bufferedWriter != null)
-                    bufferedWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Enter username: ");
+            String username = scanner.nextLine();
+            Client client = new Client(socket, username);
+            client.listenForMessage();
+            client.sendMessage();
         }
     }
 }
