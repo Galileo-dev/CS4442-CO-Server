@@ -51,37 +51,11 @@ public class Server {
                 logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
                         + socket.getPort());
 
-                InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream();
+                ClientHandler clientHandler = new ClientHandler(socket);
 
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
-                String helpMessage = "Type 'quit' to exit\n" + "Type 'help' for help\n";
+                Thread clientThread = new Thread(clientHandler);
+                clientThread.start();
 
-                bufferedWriter.write("Welcome to the server!\n" + helpMessage);
-                bufferedWriter.flush();
-
-                boolean isConnected = true;
-                while (isConnected) {
-                    String line = bufferedReader.readLine();
-
-                    switch (line) {
-                        case "quit":
-                            bufferedWriter.write("Goodbye :-(\n");
-                            isConnected = false;
-                            socket.close();
-                            break;
-
-                        case "help":
-                            bufferedWriter.write(helpMessage);
-                            bufferedWriter.flush();
-                            break;
-
-                        default:
-                            bufferedWriter.write(line + "\n");
-                            bufferedWriter.flush();
-                    }
-                }
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
                 System.exit(1);

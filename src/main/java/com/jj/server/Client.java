@@ -24,9 +24,9 @@ public class Client {
         }
     }
 
-    public void sendMessage() {
+    public void sendMessage(String message) {
         try {
-            bufferedWriter.write(username);
+            bufferedWriter.write(message);
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException io) {
@@ -42,9 +42,14 @@ public class Client {
                 while (socket.isConnected()) {
                     try {
                         msgFromChat = bufferedReader.readLine();
+                        if (msgFromChat == null) {
+                            closeEverything(socket, bufferedReader, bufferedWriter);
+                            break;
+                        }
                         System.out.println(msgFromChat);
                     } catch (IOException io) {
                         closeEverything(socket, bufferedReader, bufferedWriter);
+                        break;
                     }
                 }
             }
@@ -73,7 +78,7 @@ public class Client {
         int port = 8080;
         String host = "localhost";
         Socket socket = new Socket(host, port);
-        
+
         try {
             logger.info("Connecting to server...");
             logger.info(
@@ -84,11 +89,16 @@ public class Client {
         }
 
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Enter username: ");
+            System.out.print("Enter username: ");
             String username = scanner.nextLine();
             Client client = new Client(socket, username);
             client.listenForMessage();
-            client.sendMessage();
+            client.sendMessage(username);
+            while (socket.isConnected()) {
+                String input = scanner.nextLine();
+
+                client.sendMessage(input);
+            }
         }
     }
 }
