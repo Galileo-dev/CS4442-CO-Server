@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-// https://www.youtube.com/watch?v=gchR3DpY-8Q
+// Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Client {
 
     private Socket socket;

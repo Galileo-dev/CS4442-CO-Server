@@ -4,10 +4,52 @@ import java.io.*;
 import java.net.*;
 import java.util.logging.Logger;
 
+// Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Server {
 
-    public static void main(String[] args) {
+    private ServerSocket serverSocket;
+    public static int port = 8080;
+
+    public Server(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    public void startServer() {
         Logger logger = Logger.getLogger(Server.class.getName());
+
+        try {
+            logger.info("Starting server...");
+            serverSocket = new ServerSocket(port);
+
+            logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
+                    + serverSocket.getLocalPort());
+
+            while (!serverSocket.isClosed()) {
+                Socket socket = serverSocket.accept();
+                logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
+                        + socket.getPort());
+                ClientHandler clientHandler = new ClientHandler(socket);
+
+                Thread thread = new Thread(clientHandler);
+                thread.start();
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public void closeServerSocket() {
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
 
         if (args.length > 0 && args[0].equals("--help")) {
             System.out.println("Usage: java Server.jar --port=<port>");
@@ -16,11 +58,8 @@ public class Server {
             System.exit(1);
         }
 
-        int port = 8080;
-
         for (String arg : args) {
             if (arg.startsWith("--port=")) {
-
                 try {
                     port = Integer.parseInt(arg.substring(7));
                 } catch (Exception e) {
@@ -31,62 +70,8 @@ public class Server {
             }
         }
 
-        boolean inRunning = true;
-
-        ServerSocket serverSocket = null;
-        try {
-            logger.info("Starting server...");
-            serverSocket = new ServerSocket(port);
-
-            logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
-                    + serverSocket.getLocalPort());
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.exit(1);
-        }
-
-        while (inRunning) {
-            try {
-                Socket socket = serverSocket.accept();
-                logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
-                        + socket.getPort());
-
-                InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream();
-
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
-                String helpMessage = "Type 'quit' to exit\n" + "Type 'help' for help\n";
-
-                bufferedWriter.write("Welcome to the server!\n" + helpMessage);
-                bufferedWriter.flush();
-
-                boolean isConnected = true;
-                while (isConnected) {
-                    String line = bufferedReader.readLine();
-
-                    switch (line) {
-                        case "quit":
-                            bufferedWriter.write("Goodbye :-(\n");
-                            isConnected = false;
-                            socket.close();
-                            break;
-
-                        case "help":
-                            bufferedWriter.write(helpMessage);
-                            bufferedWriter.flush();
-                            break;
-
-                        default:
-                            bufferedWriter.write(line + "\n");
-                            bufferedWriter.flush();
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
-                System.exit(1);
-            }
-        }
-
+        ServerSocket serverSocket = new ServerSocket(port);
+        Server server = new Server(serverSocket);
+        server.startServer();
     }
 }
