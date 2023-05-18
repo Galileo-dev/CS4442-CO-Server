@@ -17,6 +17,7 @@ public class Server {
 
     }
 
+    // Singleton pattern
     public static synchronized Server getInstance() {
         if (server == null) {
             server = new Server();
@@ -38,7 +39,9 @@ public class Server {
         try {
             logger.info("Starting server...");
             // Get the singleton instance of the ServerSocket
-            ServerSocket serverSocket = Server.getServerSocket();
+
+            serverSocket = Server.getServerSocket();
+            logger.info("Server socket created successfully.");
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
                     + serverSocket.getLocalPort());
@@ -80,9 +83,11 @@ public class Server {
     public static void main(String[] args) {
 
         if (args.length > 0 && args[0].equals("--help")) {
-            System.out.println("Usage: java Server.jar --port=<port>");
-            System.out.println("Example: java Server.jar --port=8080");
-            System.out.println("        --port=<port> The port for the server to listen on");
+            String help = "Usage: java Server.jar --port=<port>\n" +
+                    "Example: java Server.jar --port=8080\n" +
+                    "         --port=<port> The port for the server to listen on";
+
+            logger.info(help);
             System.exit(1);
         }
 
@@ -95,19 +100,21 @@ public class Server {
                     System.exit(1);
                 }
             }
+        }
 
         Server server = Server.getInstance();
         server.startServer();
 
         try {
             logger.info("Stopping server...");
-            serverSocket.closeServerSocket();
+            server.closeServerSocket();
             logger.info("Server stopped");
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.severe("Error stopping server:" + e.getMessage());
             System.exit(1);
 
         }
 
     }
+
 }

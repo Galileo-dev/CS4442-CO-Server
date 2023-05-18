@@ -9,10 +9,10 @@ import java.util.logging.Logger;
 public class Client {
 
     private Socket socket;
-    private String username;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     public static Logger logger = Logger.getLogger(Client.class.getName());
+
 
     public Client(Socket socket, String username) {
         try {
@@ -31,13 +31,17 @@ public class Client {
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
+            // initialize scanner to read from terminal
             try (Scanner scanner = new Scanner(System.in)) {
                 while (socket.isConnected()) {
+                    // get input from user
                     String messageToSend = scanner.nextLine();
+                    // send input to the server
                     bufferedWriter.write(messageToSend);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
                 }
+
             }
         } catch (IOException io) {
             closeEverything(socket, bufferedReader, bufferedWriter);
@@ -45,13 +49,18 @@ public class Client {
     }
 
     public void listenForMessage() {
+        // run on separate thread.
         new Thread(new Runnable() {
             @Override
             public void run() {
                 String msgFromChat;
+                // ensure socket is connected and not closed
                 while (socket.isConnected() && !socket.isClosed()) {
                     try {
+
                         msgFromChat = bufferedReader.readLine();
+
+                        // msgFromChat will be null when the bufferedReader is closed
                         if (msgFromChat == null) {
                             closeEverything(socket, bufferedReader, bufferedWriter);
                         }
@@ -64,6 +73,7 @@ public class Client {
         }).start();
     }
 
+    // helper method to close all things related to the socket
     public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
             if (bufferedReader != null) {
@@ -81,29 +91,35 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-
         int port = 8080;
         String host = "localhost";
-        Socket socket = new Socket(host, port);
+        Socket socket = null;
 
+        // attempt to connect to server
         try {
             logger.info("Connecting to server...");
+            socket = new Socket(host, port);
             logger.info(
                     "Connected to server on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            // exit with error code 1
             System.exit(1);
         }
 
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.print("Enter username: ");
             String username = scanner.nextLine();
+
+            // create client object
             Client client = new Client(socket, username);
             client.listenForMessage();
+            // first message sent to server is used as the username
             client.sendMessage(username);
-            while (socket.isConnected()) {
-                String input = scanner.nextLine();
 
+            // read from terminal and send to server
+            while (socket.isConnected() && !socket.isClosed()) {
+                String input = scanner.nextLine();
                 client.sendMessage(input);
             }
         }

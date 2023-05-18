@@ -1,6 +1,7 @@
 package com.jj.server;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -74,13 +75,13 @@ public class ServerTest {
 
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverShouldAllowConnection() throws UnknownHostException,
             IOException {
         assertTrue(clientSocket.isConnected());
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverStartMessage() throws UnknownHostException,
             IOException {
 
@@ -90,11 +91,11 @@ public class ServerTest {
 
         // read start message
         String startMessage = bufferedReader.readLine();
-        assertTrue(startMessage.equals("Welcome username!"));
+        assertEquals("Welcome username!", startMessage);
 
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverListCommand() throws UnknownHostException,
             IOException {
         // send username
@@ -103,10 +104,10 @@ public class ServerTest {
 
         // read start message
         String listMessage = bufferedReader.readLine();
-        assertTrue(listMessage.equals("1 users online"));
+        assertEquals("1 users online", listMessage);
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverConverse() throws UnknownHostException, IOException {
         // create a new client first
         Socket clientSocket2 = new Socket("localhost", 8080);
@@ -120,12 +121,12 @@ public class ServerTest {
 
         // client 1 reads the user join message
         String userJoinMessage = bufferedReader.readLine();
-        assertTrue(userJoinMessage.equals("SERVER: username2 has entered the chat"));
+        assertEquals("SERVER: username2 has entered the chat", userJoinMessage);
 
         // read welcome message
         String welcomeMessage = bufferedReader2.readLine();
         System.out.println(welcomeMessage);
-        assertTrue(welcomeMessage.equals("Welcome username2!"));
+        assertEquals("Welcome username2!", welcomeMessage);
 
         // now let's get them to talk
         bufferedWriter.write("hello\n");
@@ -134,21 +135,21 @@ public class ServerTest {
         // client 2 reads the message
         String message1 = bufferedReader2.readLine();
         System.out.println(message1);
-        assertTrue(message1.equals("username: hello"));
+        assertEquals("username: hello", message1);
 
         // client 2 responds
         bufferedWriter2.write("hi\n");
         bufferedWriter2.flush();
 
         String message2 = bufferedReader.readLine();
-        assertTrue(message2.equals("username2: hi"));
+        assertEquals("username2: hi", message2);
 
         bufferedReader2.close();
         bufferedWriter2.close();
         clientSocket2.close();
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverExitCommand() throws UnknownHostException,
             IOException {
         // send username
@@ -156,7 +157,7 @@ public class ServerTest {
         bufferedWriter.flush();
 
         // read start message
-        String listMessage = bufferedReader.readLine();
+        bufferedReader.readLine();
         assertTrue(!clientSocket.isClosed());
     }
 
