@@ -2,16 +2,24 @@ package com.jj.server;
 
 import java.io.*;
 import java.net.*;
+import java.net.ServerSocket;
 import java.util.logging.Logger;
 
 // Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Server {
 
-    private ServerSocket serverSocket;
+    private static ServerSocket serverSocket = null;
     public static int port = 8080;
 
-    public Server(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
+    private Server() {
+
+    }
+
+    public static synchronized ServerSocket getServerSocket() throws IOException{
+        if(serverSocket == null){
+            serverSocket = new ServerSocket(port);
+        }
+        return serverSocket;
     }
 
     public void startServer() {
@@ -20,7 +28,8 @@ public class Server {
 
         try {
             logger.info("Starting server...");
-            // serverSocket = new ServerSocket(port);
+            //Get the singleton instance of the ServerSocket
+            ServerSocket serverSocket = Server.getServerSocket();
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
                     + serverSocket.getLocalPort());
@@ -71,8 +80,7 @@ public class Server {
             }
         }
 
-        ServerSocket serverSocket = new ServerSocket(port);
-        Server server = new Server(serverSocket);
+        Server server = new Server();
         server.startServer();
     }
 }
