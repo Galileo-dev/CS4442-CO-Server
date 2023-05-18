@@ -22,7 +22,7 @@ public class Client {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.scanner = scanner;
-            sendMessage(username);
+            sendMessage(this.username);
         } catch (IOException io) {
             closeEverything();
         }
@@ -57,7 +57,7 @@ public class Client {
         thread.start();
     }
 
-    private void closeEverything() {
+    public void closeEverything() {
         try {
             if (bufferedReader != null) {
                 bufferedReader.close();
