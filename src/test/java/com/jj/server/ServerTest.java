@@ -75,13 +75,13 @@ public class ServerTest {
 
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverShouldAllowConnection() throws UnknownHostException,
             IOException {
         assertTrue(clientSocket.isConnected());
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverStartMessage() throws UnknownHostException,
             IOException {
 
@@ -95,7 +95,7 @@ public class ServerTest {
 
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverListCommand() throws UnknownHostException,
             IOException {
         // send username
@@ -107,7 +107,7 @@ public class ServerTest {
         assertEquals("1 users online", listMessage);
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverConverse() throws UnknownHostException, IOException {
         // create a new client first
         Socket clientSocket2 = new Socket("localhost", 8080);
@@ -149,7 +149,7 @@ public class ServerTest {
         clientSocket2.close();
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void serverExitCommand() throws UnknownHostException,
             IOException {
         // send username

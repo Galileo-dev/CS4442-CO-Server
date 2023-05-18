@@ -17,6 +17,7 @@ public class Server {
 
     }
 
+    // Singleton pattern
     public static synchronized Server getInstance() {
         if (server == null) {
             server = new Server();
