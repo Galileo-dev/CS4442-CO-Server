@@ -1,18 +1,24 @@
 # Java Multi-Threaded Server
 
-## Description
+### Description
 
 A simple Java multithreaded client and server for two-way communication
 
-## Usage
+### Usage
 
-### Server
+#### Server
 
 ```
-java Server <port>
+java -jar target/server-1.0-SNAPSHOT-server.jar 
 ```
 
-## Build
+#### Client
+
+```
+java -jar target/server-1.0-SNAPSHOT-client.jar
+```
+
+### Build
 
 ```
 mvn clean package
@@ -20,7 +26,7 @@ mvn clean package
 
 the executable `.jar` file will be in the `target/` directory
 
-## Test
+### Test
 
 ```
 mvn test
