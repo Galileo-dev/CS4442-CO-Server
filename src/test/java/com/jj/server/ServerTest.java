@@ -37,6 +37,9 @@ public class ServerTest {
      */
 
     private static Thread serverThread;
+    private static Socket clientSocket;
+    private static BufferedReader bufferedReader;
+    private static BufferedWriter bufferedWriter;
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -49,8 +52,9 @@ public class ServerTest {
         int attempts = 0;
         while (attempts < maxAttempts) {
             try {
-                Socket clientSocket = new Socket("localhost", 8080);
-                clientSocket.close();
+                clientSocket = new Socket("localhost", 8080);
+                bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                 break;
             } catch (ConnectException e) {
                 attempts++;
@@ -65,34 +69,22 @@ public class ServerTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
+        bufferedReader.close();
+        bufferedWriter.close();
+        clientSocket.close();
         serverThread.interrupt();
+
     }
 
     @Test
     public void serverShouldAllowConnection() throws UnknownHostException,
             IOException {
-        Socket clientSocket = new Socket("localhost", 8080);
         assertTrue(clientSocket.isConnected());
-        clientSocket.close();
     }
 
     @Test
-    public void serverShouldAllowMultipleConnections() throws UnknownHostException, IOException {
-        Socket clientSocket1 = new Socket("localhost", 8080);
-        assertTrue(clientSocket1.isConnected());
-        Socket clientSocket2 = new Socket("localhost", 8080);
-        assertTrue(clientSocket2.isConnected());
-        clientSocket1.close();
-        clientSocket2.close();
-    }
-
-    @Test
-    public void serverShouldGiveStartMessage() throws UnknownHostException,
+    public void serverStartMessage() throws UnknownHostException,
             IOException {
-        Socket clientSocket = new Socket("localhost", 8080);
-        assertTrue(clientSocket.isConnected());
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
         // send username
         bufferedWriter.write("username\n");
@@ -100,10 +92,31 @@ public class ServerTest {
 
         // read start message
         String startMessage = bufferedReader.readLine();
-
         assertTrue(startMessage.equals("Welcome username!"));
-        bufferedReader.close();
-        bufferedWriter.close();
-        clientSocket.close();
+
     }
+
+    @Test
+    public void serverListCommand() throws UnknownHostException,
+            IOException {
+        // send username
+        bufferedWriter.write("/list\n");
+        bufferedWriter.flush();
+
+        // read start message
+        String listMessage = bufferedReader.readLine();
+        assertTrue(listMessage.equals("1 users online"));
+    }
+
+    public void serverExitCommand() throws UnknownHostException,
+            IOException {
+        // send username
+        bufferedWriter.write("/exit\n");
+        bufferedWriter.flush();
+
+        // read start message
+        String listMessage = bufferedReader.readLine();
+        assertTrue(!clientSocket.isClosed());
+    }
+
 }

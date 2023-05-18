@@ -48,7 +48,7 @@ public class ClientHandler implements Runnable {
         // listen to separate messages
         String input;
 
-        while (socket.isConnected()) {
+        while (socket.isConnected() && !socket.isClosed() && bufferedReader != null && bufferedWriter != null) {
             try {
                 input = bufferedReader.readLine();
 
@@ -68,11 +68,10 @@ public class ClientHandler implements Runnable {
                         broadcastMessage(clientUsername + ": " + input);
                         break;
                 }
-
-            } catch (IOException io) {
-                logger.severe("Error processing client data: " + io.getMessage());
+            } catch (Exception e) {
+                logger.severe("Error processing client data: " + e.getMessage());
                 closeEverything(socket, bufferedReader, bufferedWriter);
-                break;
+
             }
         }
     }
@@ -81,12 +80,12 @@ public class ClientHandler implements Runnable {
         if (clientUsername != null) {
             for (ClientHandler clientHandler : clientHandlers) {
                 try {
-                    if (!clientHandler.clientUsername.equals(clientUsername)) {
-                        if (clientHandler.bufferedWriter != null) {
-                            clientHandler.bufferedWriter.write(message);
-                            clientHandler.bufferedWriter.newLine();
-                            clientHandler.bufferedWriter.flush();
-                        }
+                    if (!clientHandler.equals(this)
+                            && (clientHandler.bufferedWriter != null)) {
+                        clientHandler.bufferedWriter.write(message);
+                        clientHandler.bufferedWriter.newLine();
+                        clientHandler.bufferedWriter.flush();
+
                     }
                 } catch (IOException io) {
                     logger.severe("Error broadcasting message: " + io.getMessage());

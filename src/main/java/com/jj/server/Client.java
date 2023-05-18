@@ -12,6 +12,7 @@ public class Client {
     private String username;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private Logger logger = Logger.getLogger(Client.class.getName());
 
     public Client(Socket socket, String username) {
         try {
@@ -39,17 +40,15 @@ public class Client {
             @Override
             public void run() {
                 String msgFromChat;
-                while (socket.isConnected()) {
+                while (socket.isConnected() && !socket.isClosed()) {
                     try {
                         msgFromChat = bufferedReader.readLine();
                         if (msgFromChat == null) {
                             closeEverything(socket, bufferedReader, bufferedWriter);
-                            break;
                         }
                         System.out.println(msgFromChat);
                     } catch (IOException io) {
                         closeEverything(socket, bufferedReader, bufferedWriter);
-                        break;
                     }
                 }
             }
