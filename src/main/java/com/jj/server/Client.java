@@ -12,59 +12,53 @@ public class Client {
     private String username;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private Scanner scanner;
     public static Logger logger = Logger.getLogger(Client.class.getName());
 
-    public Client(Socket socket, String username) {
+    public Client(Socket socket, String username, Scanner scanner) {
         try {
             this.socket = socket;
+            this.username = username;
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            this.username = username;
+            this.scanner = scanner;
         } catch (IOException io) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
+            closeEverything();
         }
     }
 
-    public void sendMessage(String message) {
-        try {
-            bufferedWriter.write(message);
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-
-            try (Scanner scanner = new Scanner(System.in)) {
-                while (socket.isConnected()) {
-                    String messageToSend = scanner.nextLine();
-                    bufferedWriter.write(messageToSend);
-                    bufferedWriter.newLine();
-                    bufferedWriter.flush();
-                }
-            }
-        } catch (IOException io) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
-        }
+    public void sendMessage(String message) throws IOException {
+        if (!socket.isConnected()) return;
+        bufferedWriter.write(this.username);
+        bufferedWriter.newLine();
+        bufferedWriter.write(message);
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
     }
 
     public void listenForMessage() {
-        new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 String msgFromChat;
                 while (socket.isConnected() && !socket.isClosed()) {
                     try {
+                        Thread.sleep(100);
                         msgFromChat = bufferedReader.readLine();
-                        if (msgFromChat == null) {
-                            closeEverything(socket, bufferedReader, bufferedWriter);
+                        if (msgFromChat != null) {
+                            System.out.println(msgFromChat);
                         }
-                        System.out.println(msgFromChat);
-                    } catch (IOException io) {
-                        closeEverything(socket, bufferedReader, bufferedWriter);
+
+                    } catch (IOException | InterruptedException e) {
+                        closeEverything();
                     }
                 }
             }
-        }).start();
+        });
+        thread.start();
     }
 
-    public void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+    private void closeEverything() {
         try {
             if (bufferedReader != null) {
                 bufferedReader.close();
@@ -74,6 +68,9 @@ public class Client {
             }
             if (socket != null) {
                 socket.close();
+            }
+            if (scanner != null) {
+                scanner.close();
             }
         } catch (IOException io) {
             io.printStackTrace();
@@ -85,26 +82,25 @@ public class Client {
         int port = 8080;
         String host = "localhost";
         Socket socket = new Socket(host, port);
+        Scanner scanner = new Scanner(System.in);
 
-        try {
-            logger.info("Connecting to server...");
-            logger.info(
-                    "Connected to server on " + socket.getInetAddress().getHostAddress() + ":" + socket.getLocalPort());
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.exit(1);
-        }
+        logger.info("Connecting to server...");
+        logger.info("Connected to server on "
+                    + socket.getInetAddress().getHostAddress() 
+                    + ":" 
+                    + socket.getLocalPort());
 
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Enter username: ");
-            String username = scanner.nextLine();
-            Client client = new Client(socket, username);
-            client.listenForMessage();
-            client.sendMessage(username);
-            while (socket.isConnected() && !socket.isClosed()) {
-                String input = scanner.nextLine();
-                client.sendMessage(input);
-            }
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        Client client = new Client(socket, username, scanner);
+        client.listenForMessage();
+
+        String messageToSend;
+        while (socket.isConnected() && !socket.isClosed()) {
+            messageToSend = scanner.nextLine();
+            if (!messageToSend.isBlank())
+                client.sendMessage(messageToSend);
         }
+        client.closeEverything();
     }
 }
