@@ -8,26 +8,36 @@ import java.util.logging.Logger;
 // Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Server {
 
+    private static Server server = null;
     private static ServerSocket serverSocket = null;
     public static int port = 8080;
+    private static Logger logger = Logger.getLogger(Server.class.getName());
 
     private Server() {
 
+    }
 
-    public static synchronized ServerSocket getServerSocket() throws IOException{
-        if(serverSocket == null){
+    public static synchronized Server getInstance() {
+        if (server == null) {
+            server = new Server();
+        }
+        return server;
+    }
+
+    public static synchronized ServerSocket getServerSocket() throws IOException {
+        if (serverSocket == null) {
             serverSocket = new ServerSocket(port);
         }
         return serverSocket;
     }
 
     public void startServer() {
-        Logger logger = Logger.getLogger(Server.class.getName());
+
         ClientHandler clientHandler;
 
         try {
             logger.info("Starting server...");
-            //Get the singleton instance of the ServerSocket
+            // Get the singleton instance of the ServerSocket
             ServerSocket serverSocket = Server.getServerSocket();
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
@@ -37,7 +47,8 @@ public class Server {
             System.exit(1);
         }
 
-            while (!serverSocket.isClosed()) {
+        while (!serverSocket.isClosed()) {
+            try {
                 Socket socket = serverSocket.accept();
                 logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
                         + socket.getPort());
@@ -46,9 +57,11 @@ public class Server {
                 Thread thread = new Thread(clientHandler);
                 thread.start();
             }
-        } catch (Exception e) {
-            logger.severe("Error connecting client: " + e.getMessage());
-            System.exit(1);
+
+            catch (Exception e) {
+                logger.severe("Error connecting client: " + e.getMessage());
+                System.exit(1);
+            }
         }
     }
 
@@ -58,11 +71,12 @@ public class Server {
                 serverSocket.close();
             }
         } catch (IOException io) {
+            logger.severe("Error stopping server:" + io.getMessage());
             io.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         if (args.length > 0 && args[0].equals("--help")) {
             System.out.println("Usage: java Server.jar --port=<port>");
@@ -71,7 +85,7 @@ public class Server {
             System.exit(1);
         }
 
-       for (String arg : args) {
+        for (String arg : args) {
             if (arg.startsWith("--port=")) {
                 try {
                     port = Integer.parseInt(arg.substring(7));
@@ -80,21 +94,13 @@ public class Server {
                     System.exit(1);
                 }
             }
-
-         }
- 
-      
-        try {
-            logger.info("Stopping server...");
-            serverSocket.close();
-            logger.info("Server stopped");
-        } catch (IOException e) {
-            logger.severe("Error stopping server:" + e.getMessage());
-            System.exit(1);
-
         }
 
-        Server server = new Server();
+        Server server = Server.getInstance();
         server.startServer();
+
+        logger.info("Stopping server...");
+        server.closeServerSocket();
+        logger.info("Server stopped");
     }
 }
