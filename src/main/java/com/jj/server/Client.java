@@ -12,7 +12,7 @@ public class Client {
     private String username;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    private Logger logger = Logger.getLogger(Client.class.getName());
+    public static Logger logger = Logger.getLogger(Client.class.getName());
 
     public Client(Socket socket, String username) {
         try {
@@ -81,7 +81,6 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-        Logger logger = Logger.getLogger(Client.class.getName());
 
         int port = 8080;
         String host = "localhost";
