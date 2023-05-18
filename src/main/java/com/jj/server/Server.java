@@ -80,7 +80,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length > 0 && args[0].equals("--help")) {
             String help = "Usage: java Server.jar --port=<port>\n" +
@@ -102,7 +102,7 @@ public class Server {
             }
         }
 
-        Server server = Server.getInstance();
+        server = Server.getInstance();
         server.startServer();
 
         try {
