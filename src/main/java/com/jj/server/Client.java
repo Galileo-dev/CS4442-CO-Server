@@ -12,6 +12,7 @@ public class Client {
     private String username;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private Logger logger = Logger.getLogger(Client.class.getName());
 
     public Client(Socket socket, String username) {
         try {
@@ -24,9 +25,9 @@ public class Client {
         }
     }
 
-    public void sendMessage() {
+    public void sendMessage(String message) {
         try {
-            bufferedWriter.write(username);
+            bufferedWriter.write(message);
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
@@ -48,9 +49,12 @@ public class Client {
             @Override
             public void run() {
                 String msgFromChat;
-                while (socket.isConnected()) {
+                while (socket.isConnected() && !socket.isClosed()) {
                     try {
                         msgFromChat = bufferedReader.readLine();
+                        if (msgFromChat == null) {
+                            closeEverything(socket, bufferedReader, bufferedWriter);
+                        }
                         System.out.println(msgFromChat);
                     } catch (IOException io) {
                         closeEverything(socket, bufferedReader, bufferedWriter);
@@ -82,7 +86,7 @@ public class Client {
         int port = 8080;
         String host = "localhost";
         Socket socket = new Socket(host, port);
-        
+
         try {
             logger.info("Connecting to server...");
             logger.info(
@@ -93,11 +97,16 @@ public class Client {
         }
 
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Enter username: ");
+            System.out.print("Enter username: ");
             String username = scanner.nextLine();
             Client client = new Client(socket, username);
             client.listenForMessage();
-            client.sendMessage();
+            client.sendMessage(username);
+            while (socket.isConnected()) {
+                String input = scanner.nextLine();
+
+                client.sendMessage(input);
+            }
         }
     }
 }

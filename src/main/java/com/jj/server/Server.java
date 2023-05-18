@@ -13,7 +13,6 @@ public class Server {
 
     private Server() {
 
-    }
 
     public static synchronized ServerSocket getServerSocket() throws IOException{
         if(serverSocket == null){
@@ -33,6 +32,10 @@ public class Server {
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
                     + serverSocket.getLocalPort());
+        } catch (IOException e) {
+            logger.severe("Error starting the server: " + e.getMessage());
+            System.exit(1);
+        }
 
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
@@ -44,7 +47,7 @@ public class Server {
                 thread.start();
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            logger.severe("Error connecting client: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -68,16 +71,27 @@ public class Server {
             System.exit(1);
         }
 
-        for (String arg : args) {
+       for (String arg : args) {
             if (arg.startsWith("--port=")) {
                 try {
                     port = Integer.parseInt(arg.substring(7));
-                } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
+                } catch (NumberFormatException e) {
+                    logger.severe("Invalid port number: " + e.getMessage());
                     System.exit(1);
                 }
-                // System.out.println("port: " + port);
             }
+
+         }
+ 
+      
+        try {
+            logger.info("Stopping server...");
+            serverSocket.close();
+            logger.info("Server stopped");
+        } catch (IOException e) {
+            logger.severe("Error stopping server:" + e.getMessage());
+            System.exit(1);
+
         }
 
         Server server = new Server();

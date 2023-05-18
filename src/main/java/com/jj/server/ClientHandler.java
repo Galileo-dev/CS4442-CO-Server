@@ -7,8 +7,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 // Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
+
 public class ClientHandler implements Runnable {
 
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
@@ -16,48 +18,61 @@ public class ClientHandler implements Runnable {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String clientUsername;
+    private Logger logger = Logger.getLogger(ClientHandler.class.getName());
 
     public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
-            // what we use to send
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            // what the client is sending
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // get the username
             this.clientUsername = bufferedReader.readLine();
-            clientHandlers.add(this);
+            if (this.clientUsername == null) {
+                closeEverything(socket, bufferedReader, bufferedWriter);
+                Thread.currentThread().interrupt();
+            }
+
+            addClientHandler();
             broadcastMessage("SERVER: " + clientUsername + " has entered the chat");
+            this.bufferedWriter.write("Welcome " + clientUsername + "!");
+            this.bufferedWriter.newLine();
+            this.bufferedWriter.flush();
         } catch (IOException io) {
+            logger.info("ClientHandler constructor: " + io.getMessage());
+
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
     @Override
     public void run() {
-        try {
-            String helpMessage = "Type 'quit' to exit\n" + "Type 'help' for help\n";
+        // listen to separate messages
+        String input;
 
-            bufferedWriter.write("Welcome to the server!\n" + helpMessage);
-            bufferedWriter.flush();
-
-            while (socket.isConnected()) {
-                String input = bufferedReader.readLine();
+        while (socket.isConnected() && !socket.isClosed() && bufferedReader != null && bufferedWriter != null) {
+            try {
+                input = bufferedReader.readLine();
 
                 switch (input) {
-                    case "quit":
-                        bufferedWriter.write("Goodbye :-(\n");
+                    case "/exit":
+                        bufferedWriter.write("Goodbye " + clientUsername + " ;)");
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
                         socket.close();
-                        removeClientHandler();
                         break;
-
-                    case "help":
-                        bufferedWriter.write(helpMessage);
+                    case "/list":
+                        bufferedWriter.write(clientHandlers.size() + " users online");
+                        bufferedWriter.newLine();
                         bufferedWriter.flush();
                         break;
-
                     default:
-                        broadcastMessage(input);
+                        broadcastMessage(clientUsername + ": " + input);
+                        break;
                 }
+            } catch (Exception e) {
+                logger.severe("Error processing client data: " + e.getMessage());
+                closeEverything(socket, bufferedReader, bufferedWriter);
             }
         } catch (IOException io) {
             closeEverything(socket, bufferedReader, bufferedWriter);
@@ -65,21 +80,31 @@ public class ClientHandler implements Runnable {
     }
 
     public void broadcastMessage(String message) {
-        for (ClientHandler clientHandler : clientHandlers) {
-            try {
-                if (!clientHandler.clientUsername.equals(clientUsername)) {
-                    clientHandler.bufferedWriter.write(message);
-                    clientHandler.bufferedWriter.newLine();
-                    clientHandler.bufferedWriter.flush();
+        if (clientUsername != null) {
+            for (ClientHandler clientHandler : clientHandlers) {
+                try {
+                    if (!clientHandler.equals(this)
+                            && (clientHandler.bufferedWriter != null)) {
+                        clientHandler.bufferedWriter.write(message);
+                        clientHandler.bufferedWriter.newLine();
+                        clientHandler.bufferedWriter.flush();
+
+                    }
+                } catch (IOException io) {
+                    logger.severe("Error broadcasting message: " + io.getMessage());
+                    closeEverything(socket, bufferedReader, bufferedWriter);
                 }
-            } catch (IOException io) {
-                //closeEverything(socket, bufferedReader, bufferedWriter);
-                System.err.println("Error broadcasting message to client"+ io.getMessage());
+
             }
         }
     }
 
-    public void removeClientHandler() {
+    public synchronized void addClientHandler() {
+        clientHandlers.add(this);
+    }
+
+    public synchronized void removeClientHandler() {
+
         clientHandlers.remove(this);
         broadcastMessage("SERVER: " + clientUsername + " has left the chat");
     }
@@ -97,7 +122,9 @@ public class ClientHandler implements Runnable {
                 socket.close();
             }
         } catch (IOException io) {
-            io.printStackTrace();
+            logger.severe("Error closing everything: " + io.getMessage());
         }
     }
+
+
 }
