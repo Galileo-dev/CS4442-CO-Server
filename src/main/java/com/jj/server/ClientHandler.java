@@ -124,5 +124,4 @@ public class ClientHandler implements Runnable {
             logger.severe("Error closing everything: " + io.getMessage());
         }
     }
-
 }

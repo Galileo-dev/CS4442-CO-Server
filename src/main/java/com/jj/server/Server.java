@@ -8,12 +8,20 @@ import java.util.logging.Logger;
 // Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Server {
 
+    private static Server server = null;
     private static ServerSocket serverSocket = null;
     public static int port = 8080;
     private static Logger logger = Logger.getLogger(Server.class.getName());
 
     private Server() {
 
+    }
+
+    public static synchronized Server getInstance() {
+        if (server == null) {
+            server = new Server();
+        }
+        return server;
     }
 
     public static synchronized ServerSocket getServerSocket() throws IOException {
@@ -64,11 +72,12 @@ public class Server {
                 serverSocket.close();
             }
         } catch (IOException io) {
+            logger.severe("Error stopping server:" + io.getMessage());
             io.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         if (args.length > 0 && args[0].equals("--help")) {
             System.out.println("Usage: java Server.jar --port=<port>");
@@ -87,19 +96,18 @@ public class Server {
                 }
             }
 
-        }
-
-        Server server = new Server();
+        Server server = Server.getInstance();
         server.startServer();
 
         try {
             logger.info("Stopping server...");
-            serverSocket.close();
+            serverSocket.closeServerSocket();
             logger.info("Server stopped");
         } catch (IOException e) {
             logger.severe("Error stopping server:" + e.getMessage());
             System.exit(1);
 
         }
+
     }
 }
