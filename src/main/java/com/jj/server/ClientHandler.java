@@ -125,7 +125,7 @@ public class ClientHandler implements Runnable {
                     // current client
                     if (!clientHandler.equals(this)
                             && (clientHandler.bufferedWriter != null)) {
-                        sendMessage(message);
+                        clientHandler.sendMessage(message);
                     }
                 } catch (Exception io) {
                     logger.severe("Error broadcasting message: " + io.getMessage());
