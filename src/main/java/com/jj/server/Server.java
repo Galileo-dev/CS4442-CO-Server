@@ -99,13 +99,21 @@ public class Server {
                     System.exit(1);
                 }
             }
+        }
 
         server = Server.getInstance();
         server.startServer();
 
-        logger.info("Stopping server...");
-        server.closeServerSocket();
-        logger.info("Server stopped");
+        try {
+            logger.info("Stopping server...");
+            server.closeServerSocket();
+            logger.info("Server stopped");
+        } catch (Exception e) {
+            logger.severe("Error stopping server:" + e.getMessage());
+            System.exit(1);
+
+        }
 
     }
-}}
+
+}
