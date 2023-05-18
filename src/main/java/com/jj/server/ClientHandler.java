@@ -9,7 +9,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-// https://www.youtube.com/watch?v=gLfuZrrfKes&t=359s
+// Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
+
 public class ClientHandler implements Runnable {
 
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
@@ -39,6 +40,7 @@ public class ClientHandler implements Runnable {
             this.bufferedWriter.flush();
         } catch (IOException io) {
             logger.info("ClientHandler constructor: " + io.getMessage());
+
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
@@ -71,8 +73,9 @@ public class ClientHandler implements Runnable {
             } catch (Exception e) {
                 logger.severe("Error processing client data: " + e.getMessage());
                 closeEverything(socket, bufferedReader, bufferedWriter);
-
             }
+        } catch (IOException io) {
+            closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
@@ -91,6 +94,7 @@ public class ClientHandler implements Runnable {
                     logger.severe("Error broadcasting message: " + io.getMessage());
                     closeEverything(socket, bufferedReader, bufferedWriter);
                 }
+
             }
         }
     }
@@ -100,6 +104,7 @@ public class ClientHandler implements Runnable {
     }
 
     public synchronized void removeClientHandler() {
+
         clientHandlers.remove(this);
         broadcastMessage("SERVER: " + clientUsername + " has left the chat");
     }
@@ -120,5 +125,6 @@ public class ClientHandler implements Runnable {
             logger.severe("Error closing everything: " + io.getMessage());
         }
     }
+
 
 }
