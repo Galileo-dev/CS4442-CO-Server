@@ -73,9 +73,8 @@ public class ClientHandler implements Runnable {
             } catch (Exception e) {
                 logger.severe("Error processing client data: " + e.getMessage());
                 closeEverything(socket, bufferedReader, bufferedWriter);
+
             }
-        } catch (IOException io) {
-            closeEverything(socket, bufferedReader, bufferedWriter);
         }
     }
 
@@ -125,6 +124,5 @@ public class ClientHandler implements Runnable {
             logger.severe("Error closing everything: " + io.getMessage());
         }
     }
-
 
 }

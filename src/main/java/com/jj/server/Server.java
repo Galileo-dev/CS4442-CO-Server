@@ -10,24 +10,26 @@ public class Server {
 
     private static ServerSocket serverSocket = null;
     public static int port = 8080;
+    private static Logger logger = Logger.getLogger(Server.class.getName());
 
     private Server() {
 
+    }
 
-    public static synchronized ServerSocket getServerSocket() throws IOException{
-        if(serverSocket == null){
+    public static synchronized ServerSocket getServerSocket() throws IOException {
+        if (serverSocket == null) {
             serverSocket = new ServerSocket(port);
         }
         return serverSocket;
     }
 
     public void startServer() {
-        Logger logger = Logger.getLogger(Server.class.getName());
+
         ClientHandler clientHandler;
 
         try {
             logger.info("Starting server...");
-            //Get the singleton instance of the ServerSocket
+            // Get the singleton instance of the ServerSocket
             ServerSocket serverSocket = Server.getServerSocket();
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
@@ -37,7 +39,8 @@ public class Server {
             System.exit(1);
         }
 
-            while (!serverSocket.isClosed()) {
+        while (!serverSocket.isClosed()) {
+            try {
                 Socket socket = serverSocket.accept();
                 logger.info("Client connected from " + socket.getInetAddress().getHostAddress() + ":"
                         + socket.getPort());
@@ -45,10 +48,13 @@ public class Server {
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
+
+            } catch (
+
+            Exception e) {
+                logger.severe("Error connecting client: " + e.getMessage());
+
             }
-        } catch (Exception e) {
-            logger.severe("Error connecting client: " + e.getMessage());
-            System.exit(1);
         }
     }
 
@@ -71,7 +77,7 @@ public class Server {
             System.exit(1);
         }
 
-       for (String arg : args) {
+        for (String arg : args) {
             if (arg.startsWith("--port=")) {
                 try {
                     port = Integer.parseInt(arg.substring(7));
@@ -81,9 +87,11 @@ public class Server {
                 }
             }
 
-         }
- 
-      
+        }
+
+        Server server = new Server();
+        server.startServer();
+
         try {
             logger.info("Stopping server...");
             serverSocket.close();
@@ -93,8 +101,5 @@ public class Server {
             System.exit(1);
 
         }
-
-        Server server = new Server();
-        server.startServer();
     }
 }
