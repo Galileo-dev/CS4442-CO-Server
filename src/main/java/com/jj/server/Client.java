@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-// https://www.youtube.com/watch?v=gchR3DpY-8Q
+// Implements ideas from: https://www.youtube.com/watch?v=gchR3DpY-8Q
 public class Client {
 
     private Socket socket;
@@ -29,6 +29,15 @@ public class Client {
             bufferedWriter.write(username);
             bufferedWriter.newLine();
             bufferedWriter.flush();
+
+            try (Scanner scanner = new Scanner(System.in)) {
+                while(socket.isConnected()){
+                    String messageToSend = scanner.nextLine();
+                    bufferedWriter.write(username+": "+ messageToSend);
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                }
+            }
         } catch (IOException io) {
             closeEverything(socket, bufferedReader, bufferedWriter);
         }
