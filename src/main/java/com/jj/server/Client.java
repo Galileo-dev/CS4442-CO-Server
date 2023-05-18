@@ -22,6 +22,7 @@ public class Client {
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.scanner = scanner;
+            sendMessage(username);
         } catch (IOException io) {
             closeEverything();
         }
@@ -29,8 +30,6 @@ public class Client {
 
     public void sendMessage(String message) throws IOException {
         if (!socket.isConnected()) return;
-        bufferedWriter.write(this.username);
-        bufferedWriter.newLine();
         bufferedWriter.write(message);
         bufferedWriter.newLine();
         bufferedWriter.flush();
