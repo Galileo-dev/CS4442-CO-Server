@@ -32,9 +32,9 @@ public class Client {
             bufferedWriter.flush();
 
             try (Scanner scanner = new Scanner(System.in)) {
-                while(socket.isConnected()){
+                while (socket.isConnected()) {
                     String messageToSend = scanner.nextLine();
-                    bufferedWriter.write(username+": "+ messageToSend);
+                    bufferedWriter.write(messageToSend);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
                 }
