@@ -14,7 +14,7 @@ public class Client {
     private Scanner scanner;
     public static Logger logger = Logger.getLogger(Client.class.getName());
 
-
+    //constructor initializes the instance variables, sets up the input and output streams for the socket and sends the username to the server
     public Client(Socket socket, String username, Scanner scanner) {
         try {
             this.socket = socket;
@@ -27,6 +27,7 @@ public class Client {
         }
     }
 
+    //sends messages to the server by writing it to the output stream and flushing it
     public void sendMessage(String message) throws IOException {
         if (!socket.isConnected()) return;
         bufferedWriter.write(message);
@@ -34,6 +35,9 @@ public class Client {
         bufferedWriter.flush();
     }
 
+    //thread is created to listen for messages from the server
+    //reads lines from input stream and prints them to the console if they're not null
+    //runs until socket is closed or disconnected
     public void listenForMessage() {
         Thread thread = new Thread(new Runnable() {
 
@@ -60,6 +64,7 @@ public class Client {
     }
 
     // helper method to close all things related to the socket
+    //closes: input and output streams, socket and scanner
     private void closeEverything() {
 
         try {
@@ -107,3 +112,4 @@ public class Client {
         client.closeEverything();
     }
 }
+
