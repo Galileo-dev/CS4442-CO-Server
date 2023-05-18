@@ -102,9 +102,8 @@ public class Client {
             Client client = new Client(socket, username);
             client.listenForMessage();
             client.sendMessage(username);
-            while (socket.isConnected()) {
+            while (socket.isConnected() && !socket.isClosed()) {
                 String input = scanner.nextLine();
-
                 client.sendMessage(input);
             }
         }

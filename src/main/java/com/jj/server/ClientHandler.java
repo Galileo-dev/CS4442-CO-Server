@@ -53,6 +53,10 @@ public class ClientHandler implements Runnable {
         while (socket.isConnected() && !socket.isClosed() && bufferedReader != null && bufferedWriter != null) {
             try {
                 input = bufferedReader.readLine();
+                String commandString = "\n" +
+                        "/list - list users online\n" +
+                        "/help - list available commands\n" +
+                        "/exit - exit chat\n";
 
                 switch (input) {
                     case "/exit":
@@ -66,6 +70,15 @@ public class ClientHandler implements Runnable {
                         bufferedWriter.newLine();
                         bufferedWriter.flush();
                         break;
+                    case "/help":
+                        bufferedWriter.write("available commands:" + commandString);
+                        bufferedWriter.flush();
+                        break;
+                    case "/":
+                        bufferedWriter.write("command not found\n available commands:" + commandString);
+                        bufferedWriter.flush();
+                        break;
+
                     default:
                         broadcastMessage(clientUsername + ": " + input);
                         break;
