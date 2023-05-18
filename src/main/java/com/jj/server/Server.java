@@ -56,11 +56,12 @@ public class Server {
 
                 Thread thread = new Thread(clientHandler);
                 thread.start();
-            }
 
-            catch (Exception e) {
+            } catch (
+
+            Exception e) {
                 logger.severe("Error connecting client: " + e.getMessage());
-                System.exit(1);
+
             }
         }
     }
@@ -94,13 +95,19 @@ public class Server {
                     System.exit(1);
                 }
             }
-        }
 
         Server server = Server.getInstance();
         server.startServer();
 
-        logger.info("Stopping server...");
-        server.closeServerSocket();
-        logger.info("Server stopped");
+        try {
+            logger.info("Stopping server...");
+            serverSocket.closeServerSocket();
+            logger.info("Server stopped");
+        } catch (IOException e) {
+            logger.severe("Error stopping server:" + e.getMessage());
+            System.exit(1);
+
+        }
+
     }
 }
