@@ -79,7 +79,7 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length > 0 && args[0].equals("--help")) {
             String help = "Usage: java Server.jar --port=<port>\n" +
@@ -100,18 +100,12 @@ public class Server {
                 }
             }
 
-        Server server = Server.getInstance();
+        server = Server.getInstance();
         server.startServer();
 
-        try {
-            logger.info("Stopping server...");
-            serverSocket.closeServerSocket();
-            logger.info("Server stopped");
-        } catch (IOException e) {
-            logger.severe("Error stopping server:" + e.getMessage());
-            System.exit(1);
-
-        }
+        logger.info("Stopping server...");
+        server.closeServerSocket();
+        logger.info("Server stopped");
 
     }
-}
+}}
