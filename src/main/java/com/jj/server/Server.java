@@ -30,7 +30,9 @@ public class Server {
         try {
             logger.info("Starting server...");
             // Get the singleton instance of the ServerSocket
-            ServerSocket serverSocket = Server.getServerSocket();
+
+            serverSocket = Server.getServerSocket();
+            logger.info("Server socket created successfully.");
 
             logger.info("Server started on " + serverSocket.getInetAddress().getHostAddress() + ":"
                     + serverSocket.getLocalPort());
@@ -71,9 +73,11 @@ public class Server {
     public static void main(String[] args) throws IOException {
 
         if (args.length > 0 && args[0].equals("--help")) {
-            System.out.println("Usage: java Server.jar --port=<port>");
-            System.out.println("Example: java Server.jar --port=8080");
-            System.out.println("        --port=<port> The port for the server to listen on");
+            String help = "Usage: java Server.jar --port=<port>\n" +
+                    "Example: java Server.jar --port=8080\n" +
+                    "         --port=<port> The port for the server to listen on";
+
+            logger.info(help);
             System.exit(1);
         }
 
